@@ -143,13 +143,14 @@ esp_err_t indev_tp_read(uint8_t *tp_num, uint16_t *x, uint16_t *y, uint8_t *btn_
         }
         ret_val = ESP_OK;
         break;
-    case TP_VENDOR_XPT:
+    case TP_VENDOR_XPT:{
         touch_panel_points_t pos;
         xpt2046_sample(&pos);
         *tp_num = pos.point_num;
         *x = pos.curx[0];
         *y = pos.cury[0];
         ret_val = ESP_OK;
+    }
         break;
     default:
         return ESP_ERR_NOT_FOUND;

@@ -4,7 +4,7 @@ idf_component_register(
         "src/boards"
         "src/peripherals"
         #"src/storage"
-        #"src/indev"
+        "src/indev"
         "src/codec"
         "src/calibration"
         "src/calibration/basic_painter"

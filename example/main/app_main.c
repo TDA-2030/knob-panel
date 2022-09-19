@@ -14,46 +14,40 @@
 #include "freertos/task.h"
 #include "esp_system.h"
 #include "esp_spi_flash.h"
-
-#include "gc9a01.h"
+#include "bsp_board.h"
 #include "driver/gpio.h"
 #include "app_cnt.h"
-
+#include "lvgl_port.h"
 #include "esp_log.h"
+#include "ui/ui.h"
 
-#define STACK_SIZE     2048
 
 static const char *TAG = "ESP_KNOB"; 
 
-void LCD(void *arg)
-{
-    uint16_t Color;
-    GC9A01_Init();
-    for(;;)
-    {
-        Color=rand();
-        GC9A01_FillRect(0,0,239,239,Color);
-        GC9A01_Update();
-        vTaskDelay(1000/portTICK_PERIOD_MS);
-    }
-}
-
-// void EC11(void *arg){
-//     for(;;)
-//     {
-//         EC11_Display();
-//         ESP_LOGI(TAG,"%d",get_count());
-//         vTaskDelay(1/portTICK_PERIOD_MS);
-//     }
-// }
 
 void app_main(void)
 {
+    bsp_board_init();
     //EC11_init();
     //xTaskCreate(EC11,"Test EC!!",STACK_SIZE,NULL,tskIDLE_PRIORITY,NULL);
-    /* Print chip information */
-    gpio_isr_init();
-    TaskHandle_t LCDHandle;
-    xTaskCreate(LCD,"Test LCD",STACK_SIZE,NULL,tskIDLE_PRIORITY,&LCDHandle);
-    configASSERT(LCDHandle);
+     lvgl_port_config_t lvgl_config = {
+        .display = {
+            .width = 240,
+            .height = 240,
+            .buf_size = 240 * 20,
+        },
+        .tick_period = 2,
+        .task = {
+            .core_id = -1,
+            .period = 5,
+            .priority = 1,
+        },
+    };
+    lvgl_port(&lvgl_config);
+
+    lvgl_sem_take();
+    // lv_example_meter_1();
+
+    ui_clock_init();
+    lvgl_sem_give();
 }

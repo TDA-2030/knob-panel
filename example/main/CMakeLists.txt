@@ -1,2 +1,2 @@
-idf_component_register(SRCS "hello_world_main.c" "app_cnt.c"
+idf_component_register(SRC_DIRS "." "ui/clock"
                     INCLUDE_DIRS .)

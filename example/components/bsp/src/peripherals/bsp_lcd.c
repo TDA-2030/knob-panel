@@ -21,6 +21,7 @@
 #include "soc/soc_memory_layout.h"
 #include "lcd_panel_st7796.h"
 #include "lcd_panel_st7789.h"
+#include "lcd_panel_gc9a01.h"
 #include "sdkconfig.h"
 
 static const char *TAG = "bsp_lcd";

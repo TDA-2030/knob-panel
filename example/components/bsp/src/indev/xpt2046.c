@@ -89,7 +89,7 @@ touch_panel_config_t config = {
     .interface = {
         .clk_freq = 10 * 1000 * 1000,
         .host_id = SPI2_HOST,
-        .pin_num_cs = GPIO_NUM_46,
+        .pin_num_cs = GPIO_NUM_NC,
     },
     .pin_num_int = -1,
     .direction = TOUCH_DIR_LRTB,

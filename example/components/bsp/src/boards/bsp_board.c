@@ -15,7 +15,7 @@
 static const char *TAG = "bsp boards";
 
 static const boards_info_t g_boards_info[] = {
-    {BOARD_ESP32C3_KNOB_PANEL,  "S3_LCD_EVB",   bsp_board_knob_panel_detect, bsp_board_knob_panel_init,  bsp_board_knob_panel_power_ctrl, bsp_board_knob_panel_get_res_desc},
+    {BOARD_ESP32C3_KNOB_PANEL,  "C3_KNOB_PANEL",   bsp_board_knob_panel_detect, bsp_board_knob_panel_init,  bsp_board_knob_panel_power_ctrl, bsp_board_knob_panel_get_res_desc},
 };
 static boards_info_t *g_board = NULL;
 
