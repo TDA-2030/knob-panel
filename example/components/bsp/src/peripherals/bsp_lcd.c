@@ -139,7 +139,7 @@ esp_err_t bsp_lcd_init(void)
             .dc_gpio_num = brd->GPIO_LCD_DC,
             .cs_gpio_num = brd->GPIO_LCD_CS,
             .pclk_hz = brd->LCD_FREQ,
-            .spi_mode = 3,
+            .spi_mode = 0,
             .trans_queue_depth = 10,
             .lcd_cmd_bits = brd->LCD_CMD_BITS,
             .lcd_param_bits = brd->LCD_PARAM_BITS,

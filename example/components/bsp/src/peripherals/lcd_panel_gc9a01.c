@@ -19,49 +19,6 @@
 
 static const char *TAG = "gc9a01";
 
-#define Cmd_SLPIN       0x10
-#define Cmd_SLPOUT      0x11
-#define Cmd_INVOFF      0x20
-#define Cmd_INVON       0x21
-#define Cmd_DISPOFF     0x28
-#define Cmd_DISPON      0x29
-#define Cmd_CASET       0x2A
-#define Cmd_RASET       0x2B
-#define Cmd_RAMWR       0x2C
-#define Cmd_TEON      	0x35    // Tearing effect line ON
-#define Cmd_MADCTL      0x36    // Memory data access control
-#define Cmd_COLMOD      0x3A   // Pixel format set
-
-#define Cmd_DisplayFunctionControl    0xB6
-#define Cmd_PWCTR1       0xC1    // Power control 1
-#define Cmd_PWCTR2       0xC3    // Power control 2
-#define Cmd_PWCTR3       0xC4    // Power control 3
-#define Cmd_PWCTR4       0xC9    // Power control 4
-#define Cmd_PWCTR7       0xA7    // Power control 7
-
-#define Cmd_FRAMERATE      0xE8
-#define Cmd_InnerReg1Enable   0xFE
-#define Cmd_InnerReg2Enable   0xEF
-
-#define Cmd_GAMMA1       0xF0    // Set gamma 1
-#define Cmd_GAMMA2       0xF1    // Set gamma 2
-#define Cmd_GAMMA3       0xF2    // Set gamma 3
-#define Cmd_GAMMA4       0xF3    // Set gamma 4
-
-#define ColorMode_RGB_16bit  0x50
-#define ColorMode_RGB_18bit  0x60
-#define ColorMode_MCU_12bit  0x03
-#define ColorMode_MCU_16bit  0x05
-#define ColorMode_MCU_18bit  0x06
-
-#define MADCTL_MY        0x80
-#define MADCTL_MX        0x40
-#define MADCTL_MV        0x20
-#define MADCTL_ML        0x10
-#define MADCTL_BGR       0x08
-#define MADCTL_MH        0x04
-
-
 static esp_err_t panel_gc9a01_del(esp_lcd_panel_t *panel);
 static esp_err_t panel_gc9a01_reset(esp_lcd_panel_t *panel);
 static esp_err_t panel_gc9a01_init(esp_lcd_panel_t *panel);
@@ -70,7 +27,7 @@ static esp_err_t panel_gc9a01_invert_color(esp_lcd_panel_t *panel, bool invert_c
 static esp_err_t panel_gc9a01_mirror(esp_lcd_panel_t *panel, bool mirror_x, bool mirror_y);
 static esp_err_t panel_gc9a01_swap_xy(esp_lcd_panel_t *panel, bool swap_axes);
 static esp_err_t panel_gc9a01_set_gap(esp_lcd_panel_t *panel, int x_gap, int y_gap);
-static esp_err_t panel_gc9a01_disp_off(esp_lcd_panel_t *panel, bool off);
+static esp_err_t panel_gc9a01_disp_on_off(esp_lcd_panel_t *panel, bool off);
 
 typedef struct {
     esp_lcd_panel_t base;
@@ -102,10 +59,10 @@ esp_err_t esp_lcd_new_panel_gc9a01(const esp_lcd_panel_io_handle_t io, const esp
 
     switch (panel_dev_config->color_space) {
     case ESP_LCD_COLOR_SPACE_RGB:
-        gc9a01->madctl_val |= LCD_CMD_BGR_BIT;
+        gc9a01->madctl_val = 0;
         break;
     case ESP_LCD_COLOR_SPACE_BGR:
-        gc9a01->madctl_val = 0;
+        gc9a01->madctl_val |= LCD_CMD_BGR_BIT;
         break;
     default:
         ESP_GOTO_ON_FALSE(false, ESP_ERR_NOT_SUPPORTED, err, TAG, "unsupported color space");
@@ -136,7 +93,11 @@ esp_err_t esp_lcd_new_panel_gc9a01(const esp_lcd_panel_io_handle_t io, const esp
     gc9a01->base.set_gap = panel_gc9a01_set_gap;
     gc9a01->base.mirror = panel_gc9a01_mirror;
     gc9a01->base.swap_xy = panel_gc9a01_swap_xy;
-    gc9a01->base.disp_off = panel_gc9a01_disp_off;
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
+    gc9a01->base.disp_off = panel_gc9a01_disp_on_off;
+#else
+    gc9a01->base.disp_on_off = panel_gc9a01_disp_on_off;
+#endif
     *ret_panel = &(gc9a01->base);
     ESP_LOGD(TAG, "new gc9a01 panel @%p", gc9a01);
 
@@ -174,7 +135,7 @@ static esp_err_t panel_gc9a01_reset(esp_lcd_panel_t *panel)
         gpio_set_level(gc9a01->reset_gpio_num, gc9a01->reset_level);
         vTaskDelay(pdMS_TO_TICKS(10));
         gpio_set_level(gc9a01->reset_gpio_num, !gc9a01->reset_level);
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(pdMS_TO_TICKS(150));
     } else { // perform software reset
         esp_lcd_panel_io_tx_param(io, LCD_CMD_SWRESET, NULL, 0);
         vTaskDelay(pdMS_TO_TICKS(20)); // spec, wait at least 5ms before sending new command
@@ -207,28 +168,28 @@ static const lcd_init_cmd_t vendor_specific_init[] = {
     {0x8d,{0x01},1},
     {0x8e,{0xff},1},
     {0x8f,{0xff},1},
-    {Cmd_DisplayFunctionControl,{0x00,0x20},2},// Scan direction S360 -> S1
+    {0xB6,{0x00,0x20},2},// Scan direction S360 -> S1
     //{Cmd_MADCTL,{0x08},1},//MemAccessModeSet(0, 0, 0, 1);
     //{Cmd_COLMOD,{ColorMode_MCU_16bit&0x77},1},
     {0x90,{0x08,0x08,0x08,0x08},4},
     {0xbd,{0x06},1},
     {0xbc,{0x00},1},
     {0xff,{0x60,0x01,0x04},3},
-    {Cmd_PWCTR2,{0x13},1},
-    {Cmd_PWCTR3,{0x13},1},
-    {Cmd_PWCTR4,{0x22},1},
+    {0xC3,{0x13},1},
+    {0xC4,{0x13},1},
+    {0xC9,{0x22},1},
     {0xbe,{0x11},1},
     {0xe1,{0x10,0x0e},2},
     {0xdf,{0x21,0x0c,0x02},3},
-    {Cmd_GAMMA1,{0x45,0x09,0x08,0x08,0x26,0x2a},6},
-    {Cmd_GAMMA2,{0x43,0x70,0x72,0x36,0x37,0x6f},6},
-    {Cmd_GAMMA3,{0x45,0x09,0x08,0x08,0x26,0x2a},6},
-    {Cmd_GAMMA4,{0x43,0x70,0x72,0x36,0x37,0x6f},6},
+    {0xF0,{0x45,0x09,0x08,0x08,0x26,0x2a},6},
+    {0xF1,{0x43,0x70,0x72,0x36,0x37,0x6f},6},
+    {0xF2,{0x45,0x09,0x08,0x08,0x26,0x2a},6},
+    {0xF3,{0x43,0x70,0x72,0x36,0x37,0x6f},6},
     {0xed,{0x1b,0x0b},2},
     {0xae,{0x77},1},
     {0xcd,{0x63},1},
     {0x70,{0x07,0x07,0x04,0x0e,0x0f,0x09,0x07,0x08,0x03},9},
-    {Cmd_FRAMERATE,{0x34},1},// 4 dot inversion
+    {0xE8,{0x34},1},// 4 dot inversion
     {0x62,{0x18,0x0D,0x71,0xED,0x70,0x70,0x18,0x0F,0x71,0xEF,0x70,0x70},12},
     {0x63,{0x18,0x11,0x71,0xF1,0x70,0x70,0x18,0x13,0x71,0xF3,0x70,0x70},12},
     {0x64,{0x28,0x29,0xF1,0x01,0xF1,0x00,0x07},7},
@@ -236,7 +197,8 @@ static const lcd_init_cmd_t vendor_specific_init[] = {
     {0x67,{0x00,0x3C,0x00,0x00,0x00,0x01,0x54,0x10,0x32,0x98},10},
     {0x74,{0x10,0x85,0x80,0x00,0x00,0x4E,0x00},7},
     {0x98,{0x3e,0x07},2},
-    {Cmd_TEON,{0},0},// Tearing effect line on
+    {0x35,{0},0},// Tearing effect line on
+    {0x11,{0},0},
     {0, {0}, 0xff},//END
 };
 
@@ -247,22 +209,19 @@ static esp_err_t panel_gc9a01_init(esp_lcd_panel_t *panel)
 
     // LCD goes into sleep mode and display will be turned off after power on reset, exit sleep mode first
     esp_lcd_panel_io_tx_param(io, LCD_CMD_SLPOUT, NULL, 0);
-    vTaskDelay(pdMS_TO_TICKS(100));
+    vTaskDelay(pdMS_TO_TICKS(500));
     esp_lcd_panel_io_tx_param(io, LCD_CMD_MADCTL, (uint8_t[]) {
         gc9a01->madctl_val,
     }, 1);
-    // esp_lcd_panel_io_tx_param(io, LCD_CMD_COLMOD, (uint8_t[]) {
-    //     gc9a01->colmod_cal,
-    // }, 1);
+    esp_lcd_panel_io_tx_param(io, LCD_CMD_COLMOD, (uint8_t[]) {
+        gc9a01->colmod_cal,
+    }, 1);
 
     // vendor specific initialization, it can be different between manufacturers
     // should consult the LCD supplier for initialization sequence code
     int cmd = 0;
     while (vendor_specific_init[cmd].data_bytes != 0xff) {
         esp_lcd_panel_io_tx_param(io, vendor_specific_init[cmd].cmd, vendor_specific_init[cmd].data, vendor_specific_init[cmd].data_bytes & 0x1F);
-        if (vendor_specific_init[cmd].data_bytes&0x80) {
-            vTaskDelay(pdMS_TO_TICKS(100));
-        }
         cmd++;
     }
 
@@ -357,11 +316,16 @@ static esp_err_t panel_gc9a01_set_gap(esp_lcd_panel_t *panel, int x_gap, int y_g
     return ESP_OK;
 }
 
-static esp_err_t panel_gc9a01_disp_off(esp_lcd_panel_t *panel, bool on_off)
+static esp_err_t panel_gc9a01_disp_on_off(esp_lcd_panel_t *panel, bool on_off)
 {
     gc9a01_panel_t *gc9a01 = __containerof(panel, gc9a01_panel_t, base);
     esp_lcd_panel_io_handle_t io = gc9a01->io;
     int command = 0;
+
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
+    on_off = !on_off;
+#endif
+
     if (on_off) {
         command = LCD_CMD_DISPON;
     } else {

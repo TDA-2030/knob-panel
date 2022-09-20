@@ -49,8 +49,8 @@ void lvgl_port(lvgl_port_config_t *config)
 
 static void flush_cb(struct _lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
 {
-    bsp_lcd_flush(area->x1, area->y1, area->x2, area->y2, (const void *)color_p);
-    lv_disp_flush_ready(&disp_drv);
+    bsp_lcd_flush(area->x1, area->y1, area->x2+1, area->y2+1, (const void *)color_p);
+    lv_disp_flush_ready(disp_drv);
 }
 
 static bool trans_done_cb(void *args)

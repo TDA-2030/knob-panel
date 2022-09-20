@@ -62,8 +62,8 @@ static const board_res_desc_t g_board_lcd_evb_res = {
 
     .GPIO_LCD_CS      = GPIO_NUM_10,
     .GPIO_LCD_CLK     = GPIO_NUM_1,
-    .GPIO_LCD_DIN     = GPIO_NUM_NC,
-    .GPIO_LCD_DOUT    = GPIO_NUM_0,
+    .GPIO_LCD_DIN     = GPIO_NUM_0,
+    .GPIO_LCD_DOUT    = GPIO_NUM_NC,
     .GPIO_LCD_RST     = GPIO_NUM_2,
     .GPIO_LCD_DC      = GPIO_NUM_4,
     .GPIO_LCD_BL      = GPIO_NUM_5,

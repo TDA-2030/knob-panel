@@ -12,7 +12,7 @@ extern "C" {
 #endif
 
 /**
- * @brief Create LCD panel for model ST7796
+ * @brief Create LCD panel for model GC9A01
  *
  * @param[in] io LCD panel IO handle
  * @param[in] panel_dev_config general panel device configuration
