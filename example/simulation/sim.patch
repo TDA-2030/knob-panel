@@ -13,6 +13,34 @@ index 489bec1..424cd4d 100644
 +target_include_directories(main SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../example/main)
  target_link_libraries(main PRIVATE lvgl lvgl::examples lvgl::demos lvgl::drivers ${SDL2_LIBRARIES})
  add_custom_target(run COMMAND ${EXECUTABLE_OUTPUT_PATH}/main)
+diff --git a/lv_conf.h b/lv_conf.h
+index 0b9a6dc..8a5c280 100644
+--- a/lv_conf.h
++++ b/lv_conf.h
+@@ -24,7 +24,7 @@
+  *====================*/
+ 
+ /*Color depth: 1 (1 byte per pixel), 8 (RGB332), 16 (RGB565), 32 (ARGB8888)*/
+-#define LV_COLOR_DEPTH 32
++#define LV_COLOR_DEPTH 16
+ 
+ /*Swap the 2 bytes of RGB565 color. Useful if the display has an 8-bit interface (e.g. SPI)*/
+ #define LV_COLOR_16_SWAP 0
+diff --git a/lv_drv_conf.h b/lv_drv_conf.h
+index 4f6a4e2..ddb47f7 100644
+--- a/lv_drv_conf.h
++++ b/lv_drv_conf.h
+@@ -95,8 +95,8 @@
+ #endif
+ 
+ #if USE_SDL || USE_SDL_GPU
+-#  define SDL_HOR_RES     480
+-#  define SDL_VER_RES     320
++#  define SDL_HOR_RES     240
++#  define SDL_VER_RES     240
+ 
+ /* Scale window by this factor (useful when simulating small screens) */
+ #  define SDL_ZOOM        1
 diff --git a/main.c b/main.c
 index 02d6c1e..de70323 100644
 --- a/main.c
