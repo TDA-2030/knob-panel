@@ -14,7 +14,7 @@ index 489bec1..424cd4d 100644
  target_link_libraries(main PRIVATE lvgl lvgl::examples lvgl::demos lvgl::drivers ${SDL2_LIBRARIES})
  add_custom_target(run COMMAND ${EXECUTABLE_OUTPUT_PATH}/main)
 diff --git a/lv_conf.h b/lv_conf.h
-index 0b9a6dc..8a5c280 100644
+index 0b9a6dc..0914a0d 100644
 --- a/lv_conf.h
 +++ b/lv_conf.h
 @@ -24,7 +24,7 @@
@@ -26,6 +26,32 @@ index 0b9a6dc..8a5c280 100644
  
  /*Swap the 2 bytes of RGB565 color. Useful if the display has an 8-bit interface (e.g. SPI)*/
  #define LV_COLOR_16_SWAP 0
+@@ -243,14 +243,14 @@
+  *-----------*/
+ 
+ /*1: Show CPU usage and FPS count*/
+-#define LV_USE_PERF_MONITOR 1
++#define LV_USE_PERF_MONITOR 0
+ #if LV_USE_PERF_MONITOR
+     #define LV_USE_PERF_MONITOR_POS LV_ALIGN_BOTTOM_RIGHT
+ #endif
+ 
+ /*1: Show the used memory and the memory fragmentation
+  * Requires LV_MEM_CUSTOM = 0*/
+-#define LV_USE_MEM_MONITOR 1
++#define LV_USE_MEM_MONITOR 0
+ #if LV_USE_MEM_MONITOR
+     #define LV_USE_MEM_MONITOR_POS LV_ALIGN_BOTTOM_LEFT
+ #endif
+@@ -538,7 +538,7 @@
+ #if LV_USE_THEME_DEFAULT
+ 
+     /*0: Light mode; 1: Dark mode*/
+-    #define LV_THEME_DEFAULT_DARK 0
++    #define LV_THEME_DEFAULT_DARK 1
+ 
+     /*1: Enable grow on press*/
+     #define LV_THEME_DEFAULT_GROW 1
 diff --git a/lv_drv_conf.h b/lv_drv_conf.h
 index 4f6a4e2..ddb47f7 100644
 --- a/lv_drv_conf.h
@@ -42,7 +68,7 @@ index 4f6a4e2..ddb47f7 100644
  /* Scale window by this factor (useful when simulating small screens) */
  #  define SDL_ZOOM        1
 diff --git a/main.c b/main.c
-index 02d6c1e..de70323 100644
+index 02d6c1e..417ce47 100644
 --- a/main.c
 +++ b/main.c
 @@ -61,7 +61,7 @@ static void hal_init(void);
@@ -54,12 +80,13 @@ index 02d6c1e..de70323 100644
  int main(int argc, char **argv)
  {
    (void)argc; /*Unused*/
-@@ -91,7 +91,7 @@ int main(int argc, char **argv)
+@@ -91,7 +91,8 @@ int main(int argc, char **argv)
  //  lv_example_flex_3();
  //  lv_example_label_1();
  
 -    lv_demo_widgets();
-+    ui_clock_init();
++    // ui_clock_init();
++    ui_light_init();
  
    while(1) {
        /* Periodically call the lv_task handler.

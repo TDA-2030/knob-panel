@@ -12,6 +12,7 @@
 #include "indev.h"
 #include "indev_hid.h"
 #include "indev_tp.h"
+#include "encoder.h"
 #include "esp_err.h"
 
 static indev_type_t g_major_dev = BSP_INDEV_NONE;
@@ -28,6 +29,11 @@ static esp_err_t indev_init(indev_type_t indev)
     case BSP_INDEV_HID:
         return indev_hid_init_default();
         break;
+    case BSP_INDEV_ENCODER: {
+        const board_res_desc_t *brd = bsp_board_get_description();
+        return encoder_init(brd->GPIO_ENCODER_A, brd->GPIO_ENCODER_B);
+    }
+    break;
     default:
         return ESP_ERR_INVALID_ARG;
         break;
@@ -45,6 +51,11 @@ esp_err_t indev_init_default(void)
         ret = indev_init(BSP_INDEV_TP);
         if (ESP_OK == ret) {
             g_major_dev = BSP_INDEV_TP;
+        }
+    } else if (brd->BSP_INDEV_IS_ENCODER) {
+        ret = indev_init(BSP_INDEV_ENCODER);
+        if (ESP_OK == ret) {
+            g_major_dev = BSP_INDEV_ENCODER;
         }
     } else {
         ret = indev_init(BSP_INDEV_BTN);
@@ -89,6 +100,15 @@ esp_err_t indev_get_major_value(indev_data_t *data)
         break;
     case BSP_INDEV_BTN:
         data->btn_val = bsp_btn_get_state(BOARD_BTN_ID_PREV) << 2 | bsp_btn_get_state(BOARD_BTN_ID_ENTER) << 1 | bsp_btn_get_state(BOARD_BTN_ID_NEXT);
+        if (data->btn_val) {
+            data->pressed = true;
+        } else {
+            data->pressed = false;
+        }
+        break;
+    case BSP_INDEV_ENCODER:
+        data->encoder_value = encoder_get_value();
+        data->btn_val = bsp_btn_get_state(BOARD_BTN_ID_BOOT);
         if (data->btn_val) {
             data->pressed = true;
         } else {

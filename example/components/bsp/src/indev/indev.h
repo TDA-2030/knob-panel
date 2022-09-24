@@ -18,6 +18,7 @@ typedef enum {
     BSP_INDEV_TP,
     BSP_INDEV_BTN,
     BSP_INDEV_HID,
+    BSP_INDEV_ENCODER,
     BSP_INDEV_MAX,
 } indev_type_t; /* Type of input device */
 
@@ -26,6 +27,7 @@ typedef struct {
     int32_t y;
     int32_t z;
     int32_t btn_val;
+    int32_t encoder_value;
     bool pressed;
 } indev_data_t;
 

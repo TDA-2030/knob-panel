@@ -281,6 +281,10 @@ typedef struct {
     const board_button_t *BUTTON_TAB;
     uint8_t BUTTON_TAB_LEN;
 
+    bool BSP_INDEV_IS_ENCODER;
+    int GPIO_ENCODER_A;
+    int GPIO_ENCODER_B;
+
     bool FUNC_IO_EXPANDER_EN;
     uint8_t IO_EXPANDER_I2C_ADDR;
 

@@ -33,7 +33,7 @@ static const char *TAG = "board lcd evb";
 #define EXPANDER_IO_SPI_MOSI 3
 
 static const board_button_t g_btns[] = {
-    {BOARD_BTN_ID_ENTER, 0,      GPIO_NUM_9,    0},
+    {BOARD_BTN_ID_BOOT, 0,      GPIO_NUM_9,    0},
 };
 
 
@@ -51,10 +51,9 @@ static const board_res_desc_t g_board_lcd_evb_res = {
     .LCD_MIRROR_X =    (false),
     .LCD_MIRROR_Y =    (false),
     .LCD_COLOR_INV =   (true),
-    .BSP_INDEV_IS_TP =         (0),
-    .TOUCH_PANEL_SWAP_XY =     (0),
-    .TOUCH_PANEL_INVERSE_X =   (0),
-    .TOUCH_PANEL_INVERSE_Y =   (0),
+    .BSP_INDEV_IS_ENCODER =    (1),
+    .GPIO_ENCODER_A       =    (7),
+    .GPIO_ENCODER_B       =    (6),
 
     .LCD_WIDTH =       (240),
     .LCD_HEIGHT =      (240),

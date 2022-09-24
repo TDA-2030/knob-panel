@@ -100,7 +100,7 @@ esp_err_t bsp_btn_rm_all_callback(board_btn_id_t btn_id)
 bool bsp_btn_get_state(board_btn_id_t btn_id)
 {
     const board_res_desc_t *brd = bsp_board_get_description();
-    ESP_RETURN_ON_FALSE(btn_id < brd->BUTTON_TAB_LEN, 0, TAG,  "button id incorrect");
+    ESP_RETURN_ON_FALSE(btn_id < brd->BUTTON_TAB_LEN, 0, TAG,  "button id(%d) incorrect", btn_id);
 
     button_dev_t *btn = (button_dev_t *) g_btn_handle[btn_id];
     return btn->event == BUTTON_PRESS_DOWN ? 1 : 0;
