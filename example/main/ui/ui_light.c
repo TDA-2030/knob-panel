@@ -3,6 +3,7 @@
 
 static lv_obj_t *arc;
 static lv_obj_t *img;
+static lv_obj_t *page;
 
 static void brightness_event_cb(lv_event_t *e)
 {
@@ -16,41 +17,50 @@ static void brightness_event_cb(lv_event_t *e)
     }
 }
 
-static void scroll_begin_event(lv_event_t * e)
-{
-    /*Disable the scroll animations. Triggered when a tab button is clicked */
-    if(lv_event_get_code(e) == LV_EVENT_SCROLL_BEGIN) {
-        lv_anim_t * a = lv_event_get_param(e);
-        if(a)  a->time = 0;
-    }
-}
+// static void scroll_begin_event(lv_event_t *e)
+// {
+//     /*Disable the scroll animations. Triggered when a tab button is clicked */
+//     if (lv_event_get_code(e) == LV_EVENT_SCROLL_BEGIN) {
+//         lv_anim_t *a = lv_event_get_param(e);
+//         if (a) {
+//             a->time = 0;
+//         }
+//     }
+// }
 
 void ui_light_init(void)
 {
-    lv_obj_t *page = lv_scr_act();
+    if (page) {
+        LV_LOG_WARN("light page already created");
+        return;
+    }
 
-    lv_group_t * group = lv_group_create();
-    lv_indev_t * indev = lv_indev_get_next(NULL);
-    lv_indev_type_t indev_type = lv_indev_get_type(indev);
-    lv_indev_set_group(indev, group);
+    page = lv_obj_create(lv_scr_act());
+    lv_obj_set_size(page, lv_obj_get_width(lv_obj_get_parent(page)), lv_obj_get_height(lv_obj_get_parent(page)));
+    lv_obj_set_style_border_width(page, 0, 0);
+    lv_obj_set_style_radius(page, 0, 0);
+    lv_obj_clear_flag(page, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_center(page);
 
     /*Create a Tab view object*/
-    lv_obj_t * tabview;
+    lv_obj_t *tabview;
     tabview = lv_tabview_create(page, LV_DIR_TOP, 0);
-    
+    lv_obj_set_size(tabview, lv_obj_get_width(lv_obj_get_parent(page)), lv_obj_get_height(lv_obj_get_parent(page)));
+    lv_obj_center(tabview);
+
     // lv_obj_add_event_cb(lv_tabview_get_content(tabview), scroll_begin_event, LV_EVENT_SCROLL_BEGIN, NULL);
 
     // lv_obj_set_style_bg_color(tabview, lv_palette_darken(LV_PALETTE_RED, 1), 0);
 
-    lv_obj_t * tab_btns = lv_tabview_get_tab_btns(tabview);
+    lv_obj_t *tab_btns = lv_tabview_get_tab_btns(tabview);
     // lv_obj_set_style_bg_color(tab_btns, lv_palette_darken(LV_PALETTE_GREY, 3), 0);
     // lv_obj_set_style_text_color(tab_btns, lv_palette_lighten(LV_PALETTE_GREY, 5), 0);
     // lv_obj_set_style_border_side(tab_btns, LV_BORDER_SIDE_RIGHT, LV_PART_ITEMS | LV_STATE_CHECKED);
 
     /*Add 3 tabs (the tabs are page (lv_page) and can be scrolled*/
-    lv_obj_t * tab1 = lv_tabview_add_tab(tabview, "Tab 1");lv_group_add_obj(group, tab_btns);
-    lv_obj_t * tab2 = lv_tabview_add_tab(tabview, "Tab 2");//lv_group_add_obj(group, tab2);
-    lv_obj_t * tab3 = lv_tabview_add_tab(tabview, "Tab 3");//lv_group_add_obj(group, tab3);
+    lv_obj_t *tab1 = lv_tabview_add_tab(tabview, "Tab 1");
+    lv_obj_t *tab2 = lv_tabview_add_tab(tabview, "Tab 2");
+    lv_obj_t *tab3 = lv_tabview_add_tab(tabview, "Tab 3");
     lv_obj_clear_flag(tab1, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(tab2, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(tab3, LV_OBJ_FLAG_SCROLLABLE);
@@ -74,11 +84,12 @@ void ui_light_init(void)
     lv_obj_center(arc);
 
     lv_obj_t *label1 = lv_label_create(tab1);
-    lv_label_set_text(label1, "value");
-    lv_obj_set_style_text_font(label1, &lv_font_simsun_16_cjk, 0);
+    LV_FONT_DECLARE(font_cn_32);
+    lv_obj_set_style_text_font(label1, &font_cn_32, 0);
+    lv_label_set_text(label1, "调光");
     lv_obj_set_width(label1, 150);  /*Set smaller width to make the lines wrap*/
     lv_obj_set_style_text_align(label1, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(label1, LV_ALIGN_CENTER, 0, -70);
+    lv_obj_align(label1, LV_ALIGN_CENTER, 0, -60);
 
     lv_obj_t *label2 = lv_label_create(tab1);
     lv_label_set_text(label2, "%");
@@ -103,10 +114,27 @@ void ui_light_init(void)
 
     lv_obj_add_event_cb(arc, brightness_event_cb, LV_EVENT_VALUE_CHANGED, label3);
 
+    lv_anim_t a1;
+    lv_anim_init(&a1);
+    lv_anim_set_var(&a1, arc);
+    lv_anim_set_values(&a1, lv_obj_get_y_aligned(arc) - 20, lv_obj_get_y_aligned(arc));
+    lv_anim_set_exec_cb(&a1, (lv_anim_exec_xcb_t)lv_obj_set_y);
+    lv_anim_set_path_cb(&a1, lv_anim_path_overshoot);
+    lv_anim_set_time(&a1, 400);
+    lv_anim_start(&a1);
+    lv_anim_t a2;
+    lv_anim_init(&a2);
+    lv_anim_set_var(&a2, img);
+    lv_anim_set_values(&a2, lv_obj_get_y_aligned(img) + 20, lv_obj_get_y_aligned(img));
+    lv_anim_set_exec_cb(&a2, (lv_anim_exec_xcb_t)lv_obj_set_y);
+    lv_anim_set_path_cb(&a2, lv_anim_path_overshoot);
+    lv_anim_set_time(&a2, 400);
+    lv_anim_start(&a2);
+
     /**
      * Tab 2 for colorwheel
      */
-    lv_obj_t * cw;
+    lv_obj_t *cw;
     cw = lv_colorwheel_create(tab2, true);
     lv_obj_set_size(cw, 200, 200);
     lv_obj_center(cw);
@@ -114,7 +142,7 @@ void ui_light_init(void)
     /**
      * Tab 3 for colorwheel
      */
-    lv_obj_t * label = lv_label_create(tab3);
+    lv_obj_t *label = lv_label_create(tab3);
     lv_label_set_text(label, "First tab");
 }
 
@@ -123,3 +151,10 @@ void ui_light_set_brightness(uint8_t value)
     lv_arc_set_value(arc, value);
 }
 
+void ui_light_delete(void)
+{
+    if (page) {
+        lv_obj_del(page);
+        page = NULL;
+    }
+}

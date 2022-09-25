@@ -59,10 +59,10 @@ esp_err_t esp_lcd_new_panel_gc9a01(const esp_lcd_panel_io_handle_t io, const esp
 
     switch (panel_dev_config->color_space) {
     case ESP_LCD_COLOR_SPACE_RGB:
-        gc9a01->madctl_val = 0;
+        gc9a01->madctl_val |= LCD_CMD_BGR_BIT;
         break;
     case ESP_LCD_COLOR_SPACE_BGR:
-        gc9a01->madctl_val |= LCD_CMD_BGR_BIT;
+        gc9a01->madctl_val &= ~LCD_CMD_BGR_BIT;
         break;
     default:
         ESP_GOTO_ON_FALSE(false, ESP_ERR_NOT_SUPPORTED, err, TAG, "unsupported color space");

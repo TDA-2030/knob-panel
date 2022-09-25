@@ -14,7 +14,7 @@ index 489bec1..424cd4d 100644
  target_link_libraries(main PRIVATE lvgl lvgl::examples lvgl::demos lvgl::drivers ${SDL2_LIBRARIES})
  add_custom_target(run COMMAND ${EXECUTABLE_OUTPUT_PATH}/main)
 diff --git a/lv_conf.h b/lv_conf.h
-index 0b9a6dc..0914a0d 100644
+index 0b9a6dc..5b4e40f 100644
 --- a/lv_conf.h
 +++ b/lv_conf.h
 @@ -24,7 +24,7 @@
@@ -26,6 +26,15 @@ index 0b9a6dc..0914a0d 100644
  
  /*Swap the 2 bytes of RGB565 color. Useful if the display has an 8-bit interface (e.g. SPI)*/
  #define LV_COLOR_16_SWAP 0
+@@ -136,7 +136,7 @@
+  *LV_GRAD_CACHE_DEF_SIZE sets the size of this cache in bytes.
+  *If the cache is too small the map will be allocated only while it's required for the drawing.
+  *0 mean no caching.*/
+-#define LV_GRAD_CACHE_DEF_SIZE      4
++#define LV_GRAD_CACHE_DEF_SIZE      0
+ 
+ /*Allow dithering the gradients (to achieve visual smooth color gradients on limited color depth display)
+  *LV_DITHER_GRADIENT implies allocating one or two more lines of the object's rendering surface
 @@ -243,14 +243,14 @@
   *-----------*/
  
@@ -67,8 +76,15 @@ index 4f6a4e2..ddb47f7 100644
  
  /* Scale window by this factor (useful when simulating small screens) */
  #  define SDL_ZOOM        1
+diff --git a/lvgl b/lvgl
+index 23c7b2d..9024b72 160000
+--- a/lvgl
++++ b/lvgl
+@@ -1 +1 @@
+-Subproject commit 23c7b2dbf2bf91ceb2a731fb428a9a796c6f36e2
++Subproject commit 9024b72b4853e1e7ac29a42e54b7a10d3c4f3b20
 diff --git a/main.c b/main.c
-index 02d6c1e..417ce47 100644
+index 02d6c1e..cfd07e7 100644
 --- a/main.c
 +++ b/main.c
 @@ -61,7 +61,7 @@ static void hal_init(void);
@@ -80,13 +96,12 @@ index 02d6c1e..417ce47 100644
  int main(int argc, char **argv)
  {
    (void)argc; /*Unused*/
-@@ -91,7 +91,8 @@ int main(int argc, char **argv)
+@@ -91,7 +91,7 @@ int main(int argc, char **argv)
  //  lv_example_flex_3();
  //  lv_example_label_1();
  
 -    lv_demo_widgets();
-+    // ui_clock_init();
-+    ui_light_init();
++    ui_init();
  
    while(1) {
        /* Periodically call the lv_task handler.

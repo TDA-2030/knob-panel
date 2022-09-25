@@ -29,7 +29,7 @@ void app_main(void)
         .display = {
             .width = 240,
             .height = 240,
-            .buf_size = 240 * 20,
+            .buf_size = 240 * 40,
         },
         .tick_period = 2,
         .task = {
@@ -41,8 +41,6 @@ void app_main(void)
     lvgl_port(&lvgl_config);
 
     lvgl_sem_take();
-    // lv_example_meter_1();
-
-    ui_light_init();
+    ui_init();
     lvgl_sem_give();
 }

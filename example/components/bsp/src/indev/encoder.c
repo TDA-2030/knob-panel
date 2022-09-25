@@ -26,6 +26,9 @@ static int64_t end_us = 0;
 static int64_t diff_us = 0;
 static size_t dir = 0;// -1 -> left 1-> right
 
+static encoder_cb_t cbs[ENCODER_EVENT_MAX];
+static void *cb_user_datas[ENCODER_EVENT_MAX];
+
 static void gpioTaskExample(void *arg)
 {
     uint32_t ioNum = (uint32_t) arg;
@@ -33,6 +36,7 @@ static void gpioTaskExample(void *arg)
     phb_value = gpio_get_level(GPIO_CNT_B);
     pha_value_old = pha_value;
     phb_value_old = phb_value;
+    encoder_event_t event = ENCODER_EVENT_DEC;
     while (1) {
         if (xQueueReceive(gpioEventQueue, &ioNum, portMAX_DELAY)) {
             if (ioNum == GPIO_CNT_A) {
@@ -43,12 +47,12 @@ static void gpioTaskExample(void *arg)
                     if (phb_value_change != 1) {
                         if (pha_value_old != phb_value_old) {
                             dir = 1;
+                            event = ENCODER_EVENT_INC;
                         } else {
                             dir = -1;
+                            event = ENCODER_EVENT_DEC;
                         }
                     }
-                    EC11_Value += dir;
-                    ESP_LOGI(TAG, "%d,time is %lld ", EC11_Value, diff_us);
                 }
             } else {
                 phb_value = gpio_get_level(GPIO_CNT_B);
@@ -58,21 +62,19 @@ static void gpioTaskExample(void *arg)
                     if (pha_value_change != 1) {
                         if (pha_value_old != phb_value_old) {
                             dir = -1;
+                            event = ENCODER_EVENT_DEC;
                         } else {
                             dir = 1;
+                            event = ENCODER_EVENT_INC;
                         }
                     }
-                    EC11_Value += dir;
-                    ESP_LOGI(TAG, "%d,time is %lld ", EC11_Value, diff_us);
                 }
             }
             if (pha_value_change == 1 && phb_value_change == 1 ) {
-                /* 计算每次旋钮变动变动的速度 未完成 */
-                // end_us = esp_timer_get_time();
-                // diff_us = end_us - begin_us;
-                // end_us = 0;
-                // begin_us = 0;
-                // ESP_LOGI(TAG,"%d,time is %lld ",EC11_Value,diff_us);
+                EC11_Value += dir;
+                if (cbs[event]) {
+                    cbs[event](cb_user_datas[event]);
+                }
                 pha_value_change = 0;
                 phb_value_change = 0;
                 dir = 0;
@@ -103,6 +105,13 @@ esp_err_t encoder_init(int gpio_a, int gpio_b)
     gpio_install_isr_service(0);
     gpio_isr_handler_add(GPIO_CNT_A, intrHandler, (void *)GPIO_CNT_A);
     gpio_isr_handler_add(GPIO_CNT_B, intrHandler, (void *)GPIO_CNT_B);
+    return ESP_OK;
+}
+
+esp_err_t encoder_register_callback(encoder_event_t event, encoder_cb_t cb, void *user_data)
+{
+    cbs[event] = cb;
+    cb_user_datas[event] = user_data;
     return ESP_OK;
 }
 

@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 void ui_light_init(void);
+void ui_light_delete(void);
 
 #ifdef __cplusplus
 }

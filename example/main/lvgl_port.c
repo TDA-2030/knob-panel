@@ -43,7 +43,6 @@ static void encoder_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data)
     data->enc_diff = invd.encoder_value - last_v;
     data->state = invd.pressed ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
     last_v = invd.encoder_value;
-    printf("diff=%d s=%d\n", data->enc_diff, data->state);
 }
 
 static void indev_init(void)
