@@ -14,6 +14,7 @@
 #include "freertos/task.h"
 #include "esp_system.h"
 #include "esp_spi_flash.h"
+#include "esp_heap_caps.h"
 #include "bsp_board.h"
 #include "driver/gpio.h"
 #include "lvgl_port.h"
@@ -22,9 +23,46 @@
 
 static const char *TAG = "main";
 
+
+#define MEMORY_MONITOR 0
+
+#if MEMORY_MONITOR
+static void monitor_task(void *arg)
+{
+    (void) arg;
+    const int STATS_TICKS = pdMS_TO_TICKS(2 * 1000);
+
+    while (true) {
+        ESP_LOGI(TAG, "System Info Trace");
+        printf("\tDescription\tInternal\tSPIRAM\n");
+        printf("Current Free Memory\t%d\t\t%d\n",
+               heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+               heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
+        printf("Largest Free Block\t%d\t\t%d\n",
+               heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+               heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+        printf("Min. Ever Free Size\t%d\t\t%d\n",
+               heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+               heap_caps_get_minimum_free_size(MALLOC_CAP_SPIRAM));
+
+        vTaskDelay(STATS_TICKS);
+    }
+
+    vTaskDelete(NULL);
+}
+
+static void sys_monitor_start(void)
+{
+    BaseType_t ret_val = xTaskCreatePinnedToCore(monitor_task, "Monitor Task", 4 * 1024, NULL, configMAX_PRIORITIES - 3, NULL, 0);
+    ESP_ERROR_CHECK_WITHOUT_ABORT((pdPASS == ret_val) ? ESP_OK : ESP_FAIL);
+}
+#endif
+
 void app_main(void)
 {
+    heap_caps_print_heap_info(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     bsp_board_init();
+    heap_caps_print_heap_info(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     lvgl_port_config_t lvgl_config = {
         .display = {
             .width = 240,
@@ -39,6 +77,10 @@ void app_main(void)
         },
     };
     lvgl_port(&lvgl_config);
+
+#if MEMORY_MONITOR
+    sys_monitor_start();
+#endif
 
     lvgl_sem_take();
     ui_init();

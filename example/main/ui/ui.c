@@ -9,6 +9,7 @@
 #include "lvgl.h"
 #include "lvgl_port.h"
 #include "ui.h"
+#include "ui_menu.h"
 #include "ui_clock.h"
 #include "ui_light.h"
 #include "ui_player.h"
@@ -61,18 +62,21 @@ void ui_init(void)
     lv_group_set_default(group);
     lv_indev_t *indev = lv_indev_get_next(NULL);
     if (LV_INDEV_TYPE_ENCODER == lv_indev_get_type(indev)) {
-        // ESP_LOGI(TAG, "add group for encoder");
+        printf("add group for encoder\n");
         lv_indev_set_group(indev, group);
         lv_group_focus_freeze(group, false);
     }
 
-    app_index = 2;
-    apps[app_index].create();
-    app_index_last = app_index;
-#ifdef ESP_IDF_VERSION
-    encoder_register_callback(ENCODER_EVENT_INC, encoder_change_cb, (void *) -1);
-    encoder_register_callback(ENCODER_EVENT_DEC, encoder_change_cb, (void *)1);
-#endif
+    
+    ui_menu_init();
+
+//     app_index = 2;
+//     apps[app_index].create();
+//     app_index_last = app_index;
+// #ifdef ESP_IDF_VERSION
+//     encoder_register_callback(ENCODER_EVENT_INC, encoder_change_cb, (void *) -1);
+//     encoder_register_callback(ENCODER_EVENT_DEC, encoder_change_cb, (void *)1);
+// #endif
 }
 
 void ui_add_obj_to_encoder_group(lv_obj_t *obj)

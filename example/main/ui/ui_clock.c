@@ -50,6 +50,7 @@ void ui_clock_init(void)
     lv_obj_set_size(meter, 220, 220);
     lv_obj_center(meter);
     lv_obj_set_style_border_color(meter, lv_color_make(50, 50, 50), 0);
+    lv_obj_set_style_bg_color(meter, lv_color_make(210, 150, 150), 0);
     lv_obj_remove_style(meter, NULL, LV_PART_TICKS);
     lv_obj_remove_style(meter, NULL, LV_PART_ITEMS);
     /*Create a scale for the minutes*/
