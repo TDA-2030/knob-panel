@@ -8,12 +8,6 @@
 #endif
 #include "ui.h"
 
-static lv_obj_t *page;
-
-
-#define APP_NUM 5//(sizeof(menu) / sizeof(ui_menu_app_t))
-#define APP_ICON_GAP_PIXEL (80)
-
 typedef struct {
     const char *name;
     const lv_img_dsc_t *icon;
@@ -37,9 +31,13 @@ static ui_menu_app_t menu[] = {
     // {"clock", &icon_weather, NULL, NULL},
 };
 
-static uint8_t app_index = 0;
-
+#define APP_NUM 5//(sizeof(menu) / sizeof(ui_menu_app_t))
+#define APP_ICON_GAP_PIXEL (80)
 #define ICONS_SHOW_NUM 3
+
+static uint8_t app_index = 0;
+static lv_obj_t *page;
+
 static lv_obj_t *icons[ICONS_SHOW_NUM + 1];
 static lv_coord_t old_y[ICONS_SHOW_NUM + 1];
 static uint8_t visible_index[ICONS_SHOW_NUM];
@@ -115,8 +113,7 @@ static void menu_event_cb(lv_event_t *e)
             old_y[i] = lv_obj_get_y_aligned(icons[i]);
         }
 
-        lv_obj_remove_event_cb(page, menu_event_cb);
-
+        lv_group_set_editing(lv_group_get_default(), false);
         lv_anim_t a1;
         lv_anim_init(&a1);
         lv_anim_set_var(&a1, (void *)extra_icon_index);
@@ -124,7 +121,7 @@ static void menu_event_cb(lv_event_t *e)
         lv_anim_set_exec_cb(&a1, menu_anim_exec_cb);
         lv_anim_set_path_cb(&a1, lv_anim_path_ease_in_out);
         lv_anim_set_ready_cb(&a1, menu_anim_ready_cb);
-        lv_anim_set_time(&a1, 400);
+        lv_anim_set_time(&a1, 200);
         lv_anim_set_user_data(&a1, (void *)extra_icon_index);
         lv_anim_start(&a1);
     }
@@ -141,8 +138,7 @@ static void menu_anim_ready_cb(lv_anim_t *a)
         visible_index[i] = get_num_offset(visible_index[i], ICONS_SHOW_NUM + 1, dir);
     }
     printf("dir=%d, app_index=%d, invisable_index=%d\n", dir, app_index, invisable_index);
-    lv_obj_add_event_cb(page, menu_event_cb, LV_EVENT_FOCUSED, NULL);
-    lv_obj_add_event_cb(page, menu_event_cb, LV_EVENT_KEY, NULL);
+    lv_group_set_editing(lv_group_get_default(), true);
 }
 
 void ui_menu_init(void)

@@ -15,16 +15,18 @@
 #include "esp_system.h"
 #include "esp_spi_flash.h"
 #include "esp_heap_caps.h"
+#include "nvs_flash.h"
 #include "bsp_board.h"
 #include "driver/gpio.h"
 #include "lvgl_port.h"
 #include "esp_log.h"
 #include "ui/ui.h"
+#include "rmaker/app_rmaker.h"
 
 static const char *TAG = "main";
 
 
-#define MEMORY_MONITOR 0
+#define MEMORY_MONITOR 1
 
 #if MEMORY_MONITOR
 static void monitor_task(void *arg)
@@ -60,6 +62,15 @@ static void sys_monitor_start(void)
 
 void app_main(void)
 {
+    ESP_LOGI(TAG, "Compile time: %s %s", __DATE__, __TIME__);
+    /* Initialize NVS. */
+    esp_err_t err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        err = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(err);
+
     heap_caps_print_heap_info(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     bsp_board_init();
     heap_caps_print_heap_info(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
@@ -85,4 +96,5 @@ void app_main(void)
     lvgl_sem_take();
     ui_init();
     lvgl_sem_give();
+    app_rmaker_start();
 }
