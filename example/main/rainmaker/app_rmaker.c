@@ -36,8 +36,8 @@ static bool g_is_connected = 0;
 static esp_err_t esp_box_init(void)
 {
     const board_res_desc_t *brd = bsp_board_get_description();
-    uint16_t h=0;
-    uint8_t s=0, v=0;
+    uint16_t h = 0;
+    uint8_t s = 0, v = 0;
     char cmd_json[768] = {0};
     snprintf(cmd_json, sizeof(cmd_json),
              "[{\"status\":1,\"voice\":\"%s\",\"lang\":%u,\"str\":\"%s\"},"
@@ -122,9 +122,9 @@ static void event_handler(void *arg, esp_event_base_t event_base,
     case RMAKER_MQTT_EVENT_DISCONNECTED:
         g_is_connected = 0;
         ESP_LOGI(TAG, "RMAKER disconnected");
-        // ui_acquire();
-        // ui_main_status_bar_set_cloud(g_is_connected);
-        // ui_release();
+    // ui_acquire();
+    // ui_main_status_bar_set_cloud(g_is_connected);
+    // ui_release();
     default:
         break;
     }
@@ -186,13 +186,16 @@ static void rmaker_task(void *args)
 
 static void wifi_credential_reset(void *arg)
 {
-    ESP_LOGW(TAG, "WiFi credential reset");
-    esp_rmaker_wifi_reset(0, 2);
+    button_dev_t *btn = (button_dev_t *)arg;
+    if (btn->repeat >= 5) {
+        ESP_LOGW(TAG, "WiFi credential reset");
+        esp_rmaker_wifi_reset(0, 2);
+    }
 }
 
 void app_rmaker_start(void)
 {
-    // bsp_btn_register_callback(BOARD_BTN_ID_BOOT, BUTTON_LONG_PRESS_START, wifi_credential_reset, NULL);
+    bsp_btn_register_callback(BOARD_BTN_ID_BOOT, BUTTON_PRESS_REPEAT, wifi_credential_reset, NULL);
 
     BaseType_t ret_val = xTaskCreatePinnedToCore(rmaker_task, "RMaker Task", 6 * 1024, NULL, 1, NULL, 0);
     ESP_ERROR_CHECK_WITHOUT_ABORT((pdPASS == ret_val) ? ESP_OK : ESP_FAIL);

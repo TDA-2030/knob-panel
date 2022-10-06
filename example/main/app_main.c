@@ -21,7 +21,7 @@
 #include "lvgl_port.h"
 #include "esp_log.h"
 #include "ui/ui.h"
-#include "rmaker/app_rmaker.h"
+#include "rainmaker/app_rmaker.h"
 
 static const char *TAG = "main";
 
@@ -78,7 +78,7 @@ void app_main(void)
         .display = {
             .width = 240,
             .height = 240,
-            .buf_size = 240 * 40,
+            .buf_size = 240 * 20,
         },
         .tick_period = 2,
         .task = {

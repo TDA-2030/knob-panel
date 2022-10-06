@@ -4,6 +4,9 @@
  * SPDX-License-Identifier: Unlicense OR CC0-1.0
  */
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "cJSON.h"
 #include <esp_log.h>
 #include <sdkconfig.h>
 #include <string.h>
@@ -13,19 +16,13 @@
 #include <esp_rmaker_standard_types.h>
 
 #include "app_led.h"
-#include "device_driver.h"
-#include "driver/gpio.h"
 #include "rmaker_devices.h"
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "cJSON.h"
 // #include "app_sr.h"
 // #include "app_fan.h"
 // #include "app_switch.h"
 
 static const char *TAG = "esp_box_driver";
-
 
 
 esp_err_t app_driver_light_init(char *unique_name, int gpio_r, int gpio_g, int gpio_b, int h, int s, int v, int power, char *voice)
@@ -36,19 +33,19 @@ esp_err_t app_driver_light_init(char *unique_name, int gpio_r, int gpio_g, int g
 esp_err_t app_driver_set_light_color(char *unique_name, int h, int s, int v)
 {
     ESP_LOGI(TAG, "Request to set the color of %s to h:%d s:%d v:%d", unique_name, h, s, v);
-    return ESP_OK;
+    return app_pwm_led_set_all_hsv(h, s, v);
 }
 
 esp_err_t app_driver_set_light_power(char *unique_name, bool status)
 {
     ESP_LOGI(TAG, "Request to set the power of %s to %d", unique_name, status);
-    return ESP_OK;
+    return app_pwm_led_set_power(status);
 }
 
 esp_err_t app_driver_set_light_gpio(char *unique_name, int r, int g, int b)
 {
     ESP_LOGI(TAG, "Request to set the GPIO of %s to r:%d g:%d b:%d,", unique_name, r, g, b);
-    return ESP_OK;
+    return app_pwm_led_change_io(r, g, b);
 }
 
 esp_err_t app_driver_set_light_voice(char *unique_name, char *voice)

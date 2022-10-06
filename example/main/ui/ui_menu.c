@@ -7,6 +7,10 @@
 #include "bsp_btn.h"
 #endif
 #include "ui.h"
+#include "ui_clock.h"
+#include "ui_light.h"
+#include "ui_player.h"
+#include "ui_weather.h"
 
 typedef struct {
     const char *name;
@@ -22,13 +26,11 @@ LV_IMG_DECLARE(icon_player);
 LV_IMG_DECLARE(icon_weather);
 
 static ui_menu_app_t menu[] = {
-    {"clock", &icon_clock, NULL, NULL},
-    {"clock", &icon_fans, NULL, NULL},
-    {"clock", &icon_light, NULL, NULL},
-    {"clock", &icon_player, NULL, NULL},
-    {"clock", &icon_weather, NULL, NULL},
-    // {"clock", &icon_weather, NULL, NULL},
-    // {"clock", &icon_weather, NULL, NULL},
+    {"clock", &icon_clock, ui_clock_init, ui_clock_delete},
+    {"fans", &icon_fans, NULL, NULL},
+    {"light", &icon_light, ui_light_init, ui_light_delete},
+    {"player", &icon_player, ui_player_init, ui_player_delete},
+    {"weather", &icon_weather, ui_weather_init, ui_weather_delete},
 };
 
 #define APP_NUM 5//(sizeof(menu) / sizeof(ui_menu_app_t))
@@ -93,9 +95,7 @@ static void menu_event_cb(lv_event_t *e)
     printf("evt=%d\n", code);
     if (LV_EVENT_FOCUSED == code) {
         lv_group_set_editing(lv_group_get_default(), true);
-    }
-
-    if (LV_EVENT_KEY == code) {
+    } else if (LV_EVENT_KEY == code) {
 
         uint32_t key = lv_event_get_key(e);
         int8_t  extra_icon_index = 0;
@@ -124,6 +124,8 @@ static void menu_event_cb(lv_event_t *e)
         lv_anim_set_time(&a1, 200);
         lv_anim_set_user_data(&a1, (void *)extra_icon_index);
         lv_anim_start(&a1);
+    } else if (LV_EVENT_CLICKED == code) {
+        menu[get_app_index(0)].create();
     }
 }
 
@@ -182,6 +184,7 @@ void ui_menu_init(void)
 
     lv_obj_add_event_cb(page, menu_event_cb, LV_EVENT_FOCUSED, NULL);
     lv_obj_add_event_cb(page, menu_event_cb, LV_EVENT_KEY, NULL);
+    lv_obj_add_event_cb(page, menu_event_cb, LV_EVENT_CLICKED, NULL);
     ui_add_obj_to_encoder_group(page);
 
 
