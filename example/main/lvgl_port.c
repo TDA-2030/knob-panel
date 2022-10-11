@@ -47,7 +47,6 @@ static void encoder_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data)
 
 static void indev_init(void)
 {
-    indev_init_default();
     /*Register a encoder input device*/
     lv_indev_drv_init(&indev_drv);
     indev_drv.type = LV_INDEV_TYPE_ENCODER;

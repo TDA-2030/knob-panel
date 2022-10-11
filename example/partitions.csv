@@ -3,4 +3,4 @@
 nvs,      data, nvs,     0x9000,  0x6000,
 phy_init, data, phy,     ,        0x1000,
 fctry,    data, nvs,     ,        0x6000,
-factory,  app,  factory, ,         2200K,
+factory,  app,  factory, ,         2500K,

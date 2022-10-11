@@ -152,17 +152,7 @@ void led_rgb2hsv(uint8_t r, uint8_t g, uint8_t b, uint16_t *h, uint8_t *s, uint8
 esp_err_t app_pwm_led_change_io(gpio_num_t gpio_r, gpio_num_t gpio_g, gpio_num_t gpio_b)
 {
     ESP_RETURN_ON_FALSE(g_initialized, ESP_ERR_INVALID_STATE, TAG, "pwm led is not running");
-    // if (g_initialized) {
-    //     ESP_LOGI(TAG, "io set to %d,%d,%d; before: %d,%d,%d",
-    //              gpio_r, gpio_g, gpio_b,
-    //              g_last_led_io[0],
-    //              g_last_led_io[1],
-    //              g_last_led_io[2]);
-    //     gpio_set_direction(g_last_led_io[0], GPIO_MODE_INPUT);
-    //     gpio_set_direction(g_last_led_io[1], GPIO_MODE_INPUT);
-    //     gpio_set_direction(g_last_led_io[2], GPIO_MODE_INPUT);
-    // }
-    // app_pwm_led_init(gpio_r, gpio_g, gpio_b);
+
     return ESP_OK;
 }
 
@@ -175,6 +165,9 @@ esp_err_t app_pwm_led_deinit(void)
 static void update_pwm_led(uint8_t r, uint8_t g, uint8_t b)
 {
     bsp_led_set_rgb(0, r, g, b);
+    bsp_led_set_rgb(1, r, g, b);
+    bsp_led_set_rgb(2, r, g, b);
+    bsp_led_set_rgb(3, r, g, b);
 }
 
 esp_err_t app_pwm_led_set_all(uint8_t red, uint8_t green, uint8_t blue)
