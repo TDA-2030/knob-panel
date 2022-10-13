@@ -1,15 +1,36 @@
 #include "lvgl.h"
 #include <stdio.h>
 #include "ui.h"
+#include "ui_player.h"
 
 static lv_obj_t *page;
+static ret_cb_t return_callback;
 
-void ui_player_init(void)
+
+static void player_event_cb(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *obj = lv_event_get_target(e);
+
+    if (LV_EVENT_FOCUSED == code) {
+        lv_group_set_editing(lv_group_get_default(), true);
+    } else if (LV_EVENT_KEY == code) {
+        uint32_t key = lv_event_get_key(e);
+
+    } else if (LV_EVENT_LONG_PRESSED == code) {
+        lv_indev_wait_release(lv_indev_get_next(NULL));
+        ui_player_delete();
+    }
+}
+
+void ui_player_init(ret_cb_t ret_cb)
 {
     if (page) {
         LV_LOG_WARN("player page already created");
         return;
     }
+
+    return_callback = ret_cb;
 
     page = lv_obj_create(lv_scr_act());
     lv_obj_set_size(page, lv_obj_get_width(lv_obj_get_parent(page)), lv_obj_get_height(lv_obj_get_parent(page)));
@@ -159,7 +180,11 @@ void ui_player_init(void)
     ui_add_obj_to_encoder_group(btn_prev);
     ui_add_obj_to_encoder_group(btn_mode);
     ui_add_obj_to_encoder_group(arc_volume);
-    lv_group_focus_obj(btn_play);
+    // lv_group_focus_obj(btn_play);
+
+    lv_obj_add_event_cb(page, player_event_cb, LV_EVENT_FOCUSED, NULL);
+    lv_obj_add_event_cb(page, player_event_cb, LV_EVENT_LONG_PRESSED, NULL);
+    ui_add_obj_to_encoder_group(page);
 
     lv_anim_t a1;
     lv_anim_init(&a1);
@@ -223,9 +248,13 @@ void ui_player_init(void)
 void ui_player_delete(void)
 {
     if (page) {
+        ui_remove_all_objs_from_encoder_group();
         lv_anim_del_all();
         lv_obj_del(page);
         page = NULL;
+        if (return_callback) {
+            return_callback(NULL);
+        }
     }
 }
 

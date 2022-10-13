@@ -213,5 +213,5 @@ void app_main(void)
     lvgl_sem_take();
     ui_init();
     lvgl_sem_give();
-    app_rmaker_start();
+    // app_rmaker_start();
 }

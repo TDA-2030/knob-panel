@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-void ui_light_init(void);
+void ui_light_init(ret_cb_t ret_cb);
 void ui_light_delete(void);
 
 #ifdef __cplusplus

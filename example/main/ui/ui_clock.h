@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-void ui_clock_init(void);
+void ui_clock_init(ret_cb_t ret_cb);
 void ui_clock_delete(void);
 
 #ifdef __cplusplus

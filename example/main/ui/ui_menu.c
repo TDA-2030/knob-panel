@@ -11,11 +11,12 @@
 #include "ui_light.h"
 #include "ui_player.h"
 #include "ui_weather.h"
+#include "ui_fan.h"
 
 typedef struct {
     const char *name;
     const lv_img_dsc_t *icon;
-    void (*create)(void);
+    void (*create)(ret_cb_t ret_cb);
     void (*delete)(void);
 } ui_menu_app_t;
 
@@ -27,7 +28,7 @@ LV_IMG_DECLARE(icon_weather);
 
 static ui_menu_app_t menu[] = {
     {"clock", &icon_clock, ui_clock_init, ui_clock_delete},
-    {"fans", &icon_fans, NULL, NULL},
+    {"fans", &icon_fans, ui_fan_init, ui_fan_delete},
     {"light", &icon_light, ui_light_init, ui_light_delete},
     {"player", &icon_player, ui_player_init, ui_player_delete},
     {"weather", &icon_weather, ui_weather_init, ui_weather_delete},
@@ -39,7 +40,8 @@ static ui_menu_app_t menu[] = {
 
 static uint8_t app_index = 0;
 static lv_obj_t *page;
-
+static lv_obj_t *image_bg;
+static bool anim_flag = false;
 static lv_obj_t *icons[ICONS_SHOW_NUM + 1];
 static lv_coord_t old_y[ICONS_SHOW_NUM + 1];
 static uint8_t visible_index[ICONS_SHOW_NUM];
@@ -70,6 +72,11 @@ static uint32_t get_app_index(int8_t offset)
     return get_num_offset(app_index, APP_NUM, offset);
 }
 
+static void app_return_cb(void *args)
+{
+    ui_add_obj_to_encoder_group(image_bg);
+}
+
 static void menu_anim_exec_cb(void *args, int32_t v)
 {
     int8_t extra_icon_index = (int8_t)args;
@@ -95,7 +102,7 @@ static void menu_event_cb(lv_event_t *e)
     printf("evt=%d\n", code);
     if (LV_EVENT_FOCUSED == code) {
         lv_group_set_editing(lv_group_get_default(), true);
-    } else if (LV_EVENT_KEY == code) {
+    } else if (LV_EVENT_KEY == code && false == anim_flag) {
 
         uint32_t key = lv_event_get_key(e);
         int8_t  extra_icon_index = 0;
@@ -113,7 +120,7 @@ static void menu_event_cb(lv_event_t *e)
             old_y[i] = lv_obj_get_y_aligned(icons[i]);
         }
 
-        lv_group_set_editing(lv_group_get_default(), false);
+        anim_flag = true;
         lv_anim_t a1;
         lv_anim_init(&a1);
         lv_anim_set_var(&a1, (void *)extra_icon_index);
@@ -125,13 +132,14 @@ static void menu_event_cb(lv_event_t *e)
         lv_anim_set_user_data(&a1, (void *)extra_icon_index);
         lv_anim_start(&a1);
     } else if (LV_EVENT_CLICKED == code) {
-        menu[get_app_index(0)].create();
+        lv_group_set_editing(lv_group_get_default(), false);
+        ui_remove_all_objs_from_encoder_group();
+        menu[get_app_index(0)].create(app_return_cb);
     }
 }
 
 static void menu_anim_ready_cb(lv_anim_t *a)
 {
-    printf("%s\n", __FUNCTION__);
     int8_t extra_icon_index = (int8_t)lv_anim_get_user_data(a);
     int8_t dir = extra_icon_index > 0 ? 1 : -1;
     app_index = get_app_index(dir);
@@ -139,8 +147,8 @@ static void menu_anim_ready_cb(lv_anim_t *a)
     for (size_t i = 0; i < ICONS_SHOW_NUM; i++) {
         visible_index[i] = get_num_offset(visible_index[i], ICONS_SHOW_NUM + 1, dir);
     }
+    anim_flag = false;
     printf("dir=%d, app_index=%d, invisable_index=%d\n", dir, app_index, invisable_index);
-    lv_group_set_editing(lv_group_get_default(), true);
 }
 
 void ui_menu_init(void)
@@ -158,7 +166,7 @@ void ui_menu_init(void)
     lv_obj_center(page);
     lv_obj_refr_size(page);
 
-    lv_obj_t *image_bg = lv_img_create(page);
+    image_bg = lv_img_create(page);
     LV_IMG_DECLARE(img_bg);
     lv_img_set_src(image_bg, &img_bg);
     lv_obj_align(image_bg, LV_ALIGN_CENTER, 0, 0);
@@ -182,40 +190,10 @@ void ui_menu_init(void)
     lv_obj_align(icons[invisable_index], LV_ALIGN_CENTER, 0, lv_obj_get_height(lv_obj_get_parent(image_bg)));
 
 
-    lv_obj_add_event_cb(page, menu_event_cb, LV_EVENT_FOCUSED, NULL);
-    lv_obj_add_event_cb(page, menu_event_cb, LV_EVENT_KEY, NULL);
-    lv_obj_add_event_cb(page, menu_event_cb, LV_EVENT_CLICKED, NULL);
-    ui_add_obj_to_encoder_group(page);
-
-
-
-    // lv_obj_t *label_city = lv_label_create(img);
-    // lv_label_set_text(label_city, "Shang hai");
-    // lv_obj_set_style_text_font(label_city, &lv_font_montserrat_20, 0);
-    // lv_obj_set_size(label_city, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-    // lv_obj_set_style_text_align(label_city, LV_TEXT_ALIGN_CENTER, 0);
-    // lv_obj_align(label_city, LV_ALIGN_CENTER, 0, -70);
-
-    // lv_obj_t *label_temperature = lv_label_create(img);
-    // lv_label_set_text(label_temperature, "24℃");
-    // LV_FONT_DECLARE(font_cn_48);
-    // lv_obj_set_style_text_font(label_temperature, &font_cn_48, 0);
-    // lv_obj_set_size(label_temperature, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-    // lv_obj_set_style_text_align(label_temperature, LV_TEXT_ALIGN_CENTER, 0);
-    // lv_obj_align_to(label_temperature, label_city, LV_ALIGN_OUT_BOTTOM_MID, 0, 5);
-
-    // LV_IMG_DECLARE(img_cloudy);
-    // lv_obj_t *img_icon = lv_img_create(img);
-    // lv_img_set_src(img_icon, &img_cloudy);
-    // lv_obj_align_to(img_icon, label_temperature, LV_ALIGN_OUT_BOTTOM_MID, 0, 8);
-
-    // lv_obj_t *label_state = lv_label_create(img);
-    // lv_label_set_text_fmt(label_state, "Mostly sunny\nMin:%02d℃ Max:%02d℃", 22, 28);
-    // LV_FONT_DECLARE(font_cn_12);
-    // lv_obj_set_style_text_font(label_state, &font_cn_12, 0);
-    // lv_obj_set_width(label_state, 150);
-    // lv_obj_set_style_text_align(label_state, LV_TEXT_ALIGN_CENTER, 0);
-    // lv_obj_align_to(label_state, img_icon, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+    lv_obj_add_event_cb(image_bg, menu_event_cb, LV_EVENT_FOCUSED, NULL);
+    lv_obj_add_event_cb(image_bg, menu_event_cb, LV_EVENT_KEY, NULL);
+    lv_obj_add_event_cb(image_bg, menu_event_cb, LV_EVENT_CLICKED, NULL);
+    ui_add_obj_to_encoder_group(image_bg);
 }
 
 

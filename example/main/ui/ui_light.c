@@ -1,9 +1,14 @@
 #include "lvgl.h"
 #include <stdio.h>
+#include "ui.h"
+#include "ui_light.h"
+
+static const char *TAG = "ui light";
 
 static lv_obj_t *arc;
 static lv_obj_t *img;
 static lv_obj_t *page;
+static ret_cb_t return_callback;
 
 static void brightness_event_cb(lv_event_t *e)
 {
@@ -17,23 +22,32 @@ static void brightness_event_cb(lv_event_t *e)
     }
 }
 
-// static void scroll_begin_event(lv_event_t *e)
-// {
-//     /*Disable the scroll animations. Triggered when a tab button is clicked */
-//     if (lv_event_get_code(e) == LV_EVENT_SCROLL_BEGIN) {
-//         lv_anim_t *a = lv_event_get_param(e);
-//         if (a) {
-//             a->time = 0;
-//         }
-//     }
-// }
+static void light_event_cb(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *obj = lv_event_get_target(e);
 
-void ui_light_init(void)
+    printf("%s: evt=%d\n", TAG, code);
+    if (LV_EVENT_FOCUSED == code) {
+        lv_group_set_editing(lv_group_get_default(), true);
+    } else if (LV_EVENT_KEY == code) {
+        uint32_t key = lv_event_get_key(e);
+        printf("%s, key=%d\n", TAG, key);
+
+    } else if (LV_EVENT_LONG_PRESSED == code) {
+        lv_indev_wait_release(lv_indev_get_next(NULL));
+        ui_light_delete();
+    }
+}
+
+void ui_light_init(ret_cb_t ret_cb)
 {
     if (page) {
         LV_LOG_WARN("light page already created");
         return;
     }
+
+    return_callback = ret_cb;
 
     page = lv_obj_create(lv_scr_act());
     lv_obj_set_size(page, lv_obj_get_width(lv_obj_get_parent(page)), lv_obj_get_height(lv_obj_get_parent(page)));
@@ -52,7 +66,7 @@ void ui_light_init(void)
 
     // lv_obj_set_style_bg_color(tabview, lv_palette_darken(LV_PALETTE_RED, 1), 0);
 
-    lv_obj_t *tab_btns = lv_tabview_get_tab_btns(tabview);
+    // lv_obj_t *tab_btns = lv_tabview_get_tab_btns(tabview);
     // lv_obj_set_style_bg_color(tab_btns, lv_palette_darken(LV_PALETTE_GREY, 3), 0);
     // lv_obj_set_style_text_color(tab_btns, lv_palette_lighten(LV_PALETTE_GREY, 5), 0);
     // lv_obj_set_style_border_side(tab_btns, LV_BORDER_SIDE_RIGHT, LV_PART_ITEMS | LV_STATE_CHECKED);
@@ -79,6 +93,9 @@ void ui_light_init(void)
     lv_obj_set_style_arc_width(arc, 20, LV_PART_INDICATOR);
     lv_obj_set_style_arc_color(arc, lv_color_make(60, 60, 60), LV_PART_MAIN);
     lv_obj_set_style_arc_color(arc, lv_color_make(200, 150, 20), LV_PART_INDICATOR);
+    lv_obj_set_style_outline_width(arc, 2, LV_STATE_FOCUSED | LV_PART_KNOB);
+    lv_obj_set_style_outline_color(arc, lv_palette_main(LV_PALETTE_LIGHT_BLUE), LV_STATE_FOCUSED | LV_PART_KNOB);
+    lv_obj_set_style_outline_color(arc, lv_palette_main(LV_PALETTE_YELLOW), LV_STATE_EDITED | LV_PART_KNOB);
     lv_obj_remove_style(arc, NULL, LV_PART_KNOB);   /*Be sure the knob is not displayed*/
     // lv_obj_clear_flag(arc, LV_OBJ_FLAG_CLICKABLE);  /*To not allow adjusting by click*/
     lv_obj_center(arc);
@@ -136,7 +153,7 @@ void ui_light_init(void)
      */
     lv_obj_t *cw;
     cw = lv_colorwheel_create(tab2, true);
-    lv_obj_set_size(cw, 200, 200);
+    lv_obj_set_size(cw, 180, 180);
     lv_obj_center(cw);
 
     /**
@@ -144,6 +161,17 @@ void ui_light_init(void)
      */
     lv_obj_t *label = lv_label_create(tab3);
     lv_label_set_text(label, "First tab");
+
+    lv_obj_add_event_cb(page, light_event_cb, LV_EVENT_FOCUSED, NULL);
+    // lv_obj_add_event_cb(tabview, light_event_cb, LV_EVENT_KEY, NULL);
+    // lv_obj_add_event_cb(tabview, light_event_cb, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(page, light_event_cb, LV_EVENT_LONG_PRESSED, NULL);
+    ui_add_obj_to_encoder_group(page);
+    // ui_add_obj_to_encoder_group(arc);
+    // ui_add_obj_to_encoder_group(cw);
+    // ui_add_obj_to_encoder_group(label);
+    // lv_group_set_editing(lv_group_get_default(), false);
+    // lv_group_focus_obj(tabview);
 }
 
 void ui_light_set_brightness(uint8_t value)
@@ -154,7 +182,11 @@ void ui_light_set_brightness(uint8_t value)
 void ui_light_delete(void)
 {
     if (page) {
+        ui_remove_all_objs_from_encoder_group();
         lv_obj_del(page);
         page = NULL;
+        if (return_callback) {
+            return_callback(NULL);
+        }
     }
 }

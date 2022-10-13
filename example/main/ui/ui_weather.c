@@ -7,24 +7,35 @@
 #include "bsp_btn.h"
 #endif
 #include "ui.h"
+#include "ui_weather.h"
 
 static lv_obj_t *page;
+static ret_cb_t return_callback;
 
-#ifdef ESP_IDF_VERSION
-static void btn_return_cb(void *args)
+static void weather_event_cb(lv_event_t *e)
 {
-    button_dev_t *btn = (button_dev_t *)args;
-    lv_obj_t *page = btn->cb_user_data;
-    // lv_obj_del(page);
-}
-#endif
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *obj = lv_event_get_target(e);
 
-void ui_weather_init(void)
+    if (LV_EVENT_FOCUSED == code) {
+        lv_group_set_editing(lv_group_get_default(), true);
+    } else if (LV_EVENT_KEY == code) {
+        uint32_t key = lv_event_get_key(e);
+
+    } else if (LV_EVENT_LONG_PRESSED == code) {
+        lv_indev_wait_release(lv_indev_get_next(NULL));
+        ui_weather_delete();
+    }
+}
+
+void ui_weather_init(ret_cb_t ret_cb)
 {
     if (page) {
         LV_LOG_WARN("weather page already created");
         return;
     }
+
+    return_callback = ret_cb;
 
     page = lv_obj_create(lv_scr_act());
     lv_obj_set_size(page, lv_obj_get_width(lv_obj_get_parent(page)), lv_obj_get_height(lv_obj_get_parent(page)));
@@ -94,16 +105,21 @@ void ui_weather_init(void)
     lv_anim_set_time(&a3, 400);
     lv_anim_start(&a3);
 
-#ifdef ESP_IDF_VERSION
-    bsp_btn_register_callback(BOARD_BTN_ID_BOOT, BUTTON_LONG_PRESS_START, btn_return_cb, page);
-#endif
+    lv_obj_add_event_cb(page, weather_event_cb, LV_EVENT_FOCUSED, NULL);
+    lv_obj_add_event_cb(page, weather_event_cb, LV_EVENT_LONG_PRESSED, NULL);
+    ui_add_obj_to_encoder_group(page);
+
 }
 
 void ui_weather_delete(void)
 {
     if (page) {
+        ui_remove_all_objs_from_encoder_group();
         lv_obj_del(page);
         page = NULL;
+        if (return_callback) {
+            return_callback(NULL);
+        }
     }
 }
 
