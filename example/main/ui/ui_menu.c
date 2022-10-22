@@ -12,12 +12,12 @@
 #include "ui_player.h"
 #include "ui_weather.h"
 #include "ui_fan.h"
+#include "ui_washing.h"
 
 typedef struct {
     const char *name;
     const lv_img_dsc_t *icon;
     void (*create)(ret_cb_t ret_cb);
-    void (*delete)(void);
 } ui_menu_app_t;
 
 LV_IMG_DECLARE(icon_clock);
@@ -25,13 +25,15 @@ LV_IMG_DECLARE(icon_fans);
 LV_IMG_DECLARE(icon_light);
 LV_IMG_DECLARE(icon_player);
 LV_IMG_DECLARE(icon_weather);
+LV_IMG_DECLARE(icon_washing);
 
 static ui_menu_app_t menu[] = {
-    {"clock", &icon_clock, ui_clock_init, ui_clock_delete},
-    {"fans", &icon_fans, ui_fan_init, ui_fan_delete},
-    {"light", &icon_light, ui_light_init, ui_light_delete},
-    {"player", &icon_player, ui_player_init, ui_player_delete},
-    {"weather", &icon_weather, ui_weather_init, ui_weather_delete},
+    {"clock", &icon_clock, ui_clock_init},
+    {"washing", &icon_washing, ui_washing_init},
+    {"fans", &icon_fans, ui_fan_init},
+    {"light", &icon_light, ui_light_init},
+    {"player", &icon_player, ui_player_init},
+    {"weather", &icon_weather, ui_weather_init},
 };
 
 #define APP_NUM 5//(sizeof(menu) / sizeof(ui_menu_app_t))

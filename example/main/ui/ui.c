@@ -10,6 +10,7 @@
 #include "lvgl_port.h"
 #include "ui.h"
 #include "ui_menu.h"
+#include <math.h>
 
 static const char *TAG = "ui";
 static lv_group_t *group;
@@ -24,6 +25,16 @@ void ui_init(void)
         lv_indev_set_group(indev, group);
         lv_group_focus_freeze(group, false);
     }
+
+    // {
+    //     double x=1.5;
+    //     for (size_t i = 0; i < 20; i++)
+    //     {
+    //         x=(pow(x*x+1, 1.0/3.0));
+    //         printf("x=%f\n", x);
+    //     }
+        
+    // }
 
     ui_menu_init();
 }
