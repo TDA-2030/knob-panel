@@ -162,16 +162,16 @@ void ui_light_init(ret_cb_t ret_cb)
     lv_obj_t *label = lv_label_create(tab3);
     lv_label_set_text(label, "First tab");
 
-    lv_obj_add_event_cb(page, light_event_cb, LV_EVENT_FOCUSED, NULL);
+    
+    ui_add_obj_to_encoder_group(arc);
+    ui_add_obj_to_encoder_group(cw);
+    lv_group_focus_obj(arc);
+    // ui_add_obj_to_encoder_group(label);
+    // lv_obj_add_event_cb(page, light_event_cb, LV_EVENT_FOCUSED, NULL);
     // lv_obj_add_event_cb(tabview, light_event_cb, LV_EVENT_KEY, NULL);
     // lv_obj_add_event_cb(tabview, light_event_cb, LV_EVENT_CLICKED, NULL);
-    lv_obj_add_event_cb(page, light_event_cb, LV_EVENT_LONG_PRESSED, NULL);
-    ui_add_obj_to_encoder_group(page);
-    // ui_add_obj_to_encoder_group(arc);
-    // ui_add_obj_to_encoder_group(cw);
-    // ui_add_obj_to_encoder_group(label);
-    // lv_group_set_editing(lv_group_get_default(), false);
-    // lv_group_focus_obj(tabview);
+    lv_obj_add_event_cb(arc, light_event_cb, LV_EVENT_LONG_PRESSED, NULL);
+    lv_obj_add_event_cb(cw, light_event_cb, LV_EVENT_LONG_PRESSED, NULL);
 }
 
 void ui_light_set_brightness(uint8_t value)

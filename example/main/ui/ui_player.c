@@ -180,11 +180,13 @@ void ui_player_init(ret_cb_t ret_cb)
     ui_add_obj_to_encoder_group(btn_prev);
     ui_add_obj_to_encoder_group(btn_mode);
     ui_add_obj_to_encoder_group(arc_volume);
-    // lv_group_focus_obj(btn_play);
+    lv_group_focus_obj(btn_play);
 
-    lv_obj_add_event_cb(page, player_event_cb, LV_EVENT_FOCUSED, NULL);
-    lv_obj_add_event_cb(page, player_event_cb, LV_EVENT_LONG_PRESSED, NULL);
-    ui_add_obj_to_encoder_group(page);
+    lv_obj_add_event_cb(btn_play, player_event_cb, LV_EVENT_LONG_PRESSED, NULL);
+    lv_obj_add_event_cb(btn_next, player_event_cb, LV_EVENT_LONG_PRESSED, NULL);
+    lv_obj_add_event_cb(btn_prev, player_event_cb, LV_EVENT_LONG_PRESSED, NULL);
+    lv_obj_add_event_cb(btn_mode, player_event_cb, LV_EVENT_LONG_PRESSED, NULL);
+    lv_obj_add_event_cb(arc_volume, player_event_cb, LV_EVENT_LONG_PRESSED, NULL);
 
     lv_anim_t a1;
     lv_anim_init(&a1);
