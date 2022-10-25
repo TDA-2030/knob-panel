@@ -91,7 +91,7 @@ static void washing_event_cb(lv_event_t *e)
             lv_anim_set_path_cb(&a1, lv_anim_path_ease_in_out);
             lv_anim_set_ready_cb(&a1, func_anim_ready_cb);
             lv_anim_set_user_data(&a1, (void *)changed);
-            lv_anim_set_time(&a1, 500);
+            lv_anim_set_time(&a1, 350);
             lv_anim_start(&a1);
         }
 
@@ -130,7 +130,7 @@ static void mask_event_cb(lv_event_t *e)
         lv_event_set_cover_res(e, LV_COVER_RES_MASKED);
     } else if (code == LV_EVENT_DRAW_MAIN_BEGIN) {
         /* add mask */
-        lv_area_t win_area = {.x1 = 100, .x2 = 120, .y1 = 100, .y2 = 120};
+        lv_area_t win_area;
         lv_obj_get_coords(img_bg, &win_area);
         lv_draw_mask_radius_param_t *mask_out_param = lv_mem_buf_get(sizeof(lv_draw_mask_radius_param_t));
         lv_draw_mask_radius_init(mask_out_param, &win_area, LV_RADIUS_CIRCLE, 0);
@@ -167,10 +167,10 @@ void ui_washing_init(ret_cb_t ret_cb)
     lv_obj_align(img_bg, LV_ALIGN_LEFT_MID, -7, 0);
     img_wave1 = lv_img_create(img_bg);
     lv_img_set_src(img_wave1, &img_washing_wave1);
-    lv_obj_align(img_wave1, LV_ALIGN_BOTTOM_MID, -10, 10);
+    lv_obj_align(img_wave1, LV_ALIGN_BOTTOM_MID, -15, 10);
     img_wave2 = lv_img_create(img_bg);
     lv_img_set_src(img_wave2, &img_washing_wave2);
-    lv_obj_align(img_wave2, LV_ALIGN_BOTTOM_MID, 10, 10);
+    lv_obj_align(img_wave2, LV_ALIGN_BOTTOM_MID, 20, 10);
     lv_obj_t *img_bub1 = lv_img_create(img_bg);
     lv_img_set_src(img_bub1, &img_washing_bubble1);
     lv_obj_center(img_bub1);
@@ -192,6 +192,7 @@ void ui_washing_init(ret_cb_t ret_cb)
     lv_obj_t *label1 = lv_label_create(page);
     lv_obj_set_style_text_font(label1, &lv_font_montserrat_16, 0);
     lv_label_set_text(label1, "- 45 min -");
+    lv_obj_set_style_text_opa(label1, LV_OPA_70, 0);
     lv_obj_set_width(label1, 150);  /*Set smaller width to make the lines wrap*/
     lv_obj_set_style_text_align(label1, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(label1, LV_ALIGN_CENTER, 60, 27);
@@ -224,10 +225,10 @@ void ui_washing_init(ret_cb_t ret_cb)
     lv_anim_init(&a3);
     lv_anim_set_var(&a3, img_wave1);
     lv_anim_set_delay(&a3, 0);
-    lv_anim_set_values(&a3, -20, 20);
+    lv_anim_set_values(&a3, -40, 40);
     lv_anim_set_exec_cb(&a3, wave_anim_cb);
     lv_anim_set_path_cb(&a3, lv_anim_path_ease_in_out);
-    lv_anim_set_time(&a3, lv_rand(2000, 2800));
+    lv_anim_set_time(&a3, lv_rand(3200, 4000));
     lv_anim_set_repeat_count(&a3, LV_ANIM_REPEAT_INFINITE);
     lv_anim_start(&a3);
 
