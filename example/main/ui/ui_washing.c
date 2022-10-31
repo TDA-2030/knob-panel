@@ -51,7 +51,7 @@ static void func_anim_cb(void *args, int32_t v)
         if (abs_t < 30) {
             lv_img_set_zoom(img_funcs[i], 256 * (100 - abs_t) / 70);
             lv_obj_set_style_img_recolor_opa(img_funcs[i], LV_OPA_COVER, 0);
-            lv_obj_set_style_img_recolor(img_funcs[i], lv_color_hsv_to_rgb(200, (30-abs_t)*60/30, 100), 0);
+            lv_obj_set_style_img_recolor(img_funcs[i], lv_color_hsv_to_rgb(198, (30-abs_t)*60/30, 100), 0);
         }
     }
 }

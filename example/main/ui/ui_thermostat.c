@@ -13,12 +13,23 @@ static void thermostat_event_cb(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *obj = lv_event_get_target(e);
-    printf("evt=%d\n", code);
+    lv_obj_t *usr_obj = lv_event_get_user_data(e);
     if (LV_EVENT_FOCUSED == code) {
         lv_group_set_editing(lv_group_get_default(), true);
     } else if (LV_EVENT_KEY == code) {
         uint32_t key = lv_event_get_key(e);
-        printf("key=%d\n", key);
+        int16_t v = lv_arc_get_value(usr_obj);
+        if (LV_KEY_RIGHT == key) {
+            if (v < lv_arc_get_max_value(usr_obj)) {
+                lv_arc_set_value(usr_obj, v + 1);
+                lv_event_send(usr_obj, LV_EVENT_VALUE_CHANGED, NULL);
+            }
+        } else if (LV_KEY_LEFT == key) {
+            if (v > lv_arc_get_min_value(usr_obj)) {
+                lv_arc_set_value(usr_obj, v - 1);
+                lv_event_send(usr_obj, LV_EVENT_VALUE_CHANGED, NULL);
+            }
+        }
 
     } else if (LV_EVENT_LONG_PRESSED == code) {
         lv_indev_wait_release(lv_indev_get_next(NULL));
@@ -55,6 +66,13 @@ void ui_thermostat_init(const ui_app_param_t *param)
     lv_obj_center(page);
     lv_obj_refr_size(page);
 
+    LV_IMG_DECLARE(thermostat_bg);
+    lv_obj_t *img = lv_img_create(page);
+    lv_img_set_src(img, &thermostat_bg);
+    lv_obj_align(img, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_set_style_img_recolor(img, param->theme_color, 0);
+    lv_obj_set_style_img_recolor_opa(img, LV_OPA_30, 0);
+
     lv_obj_t *arc = lv_arc_create(page);
     lv_obj_set_size(arc, lv_obj_get_width(page) - 50, lv_obj_get_height(page) - 50);
     lv_arc_set_rotation(arc, 180 + 30);
@@ -73,9 +91,8 @@ void ui_thermostat_init(const ui_app_param_t *param)
     lv_obj_center(arc);
 
     lv_obj_t *label1 = lv_label_create(page);
-    LV_FONT_DECLARE(font_cn_32);
     lv_obj_set_style_text_font(label1, &lv_font_montserrat_48, 0);
-    lv_label_set_text(label1, "26");
+    lv_label_set_text_fmt(label1, "%d", lv_arc_get_value(arc));
     lv_obj_set_width(label1, 60);  /*Set smaller width to make the lines wrap*/
     lv_obj_set_style_text_align(label1, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(label1, LV_ALIGN_CENTER, 0, 0);
@@ -89,7 +106,7 @@ void ui_thermostat_init(const ui_app_param_t *param)
 
     lv_obj_add_event_cb(arc, temperature_event_cb, LV_EVENT_VALUE_CHANGED, label1);
     lv_obj_add_event_cb(page, thermostat_event_cb, LV_EVENT_FOCUSED, NULL);
-    lv_obj_add_event_cb(page, thermostat_event_cb, LV_EVENT_KEY, NULL);
+    lv_obj_add_event_cb(page, thermostat_event_cb, LV_EVENT_KEY, arc);
     lv_obj_add_event_cb(page, thermostat_event_cb, LV_EVENT_LONG_PRESSED, NULL);
     ui_add_obj_to_encoder_group(page);
 
