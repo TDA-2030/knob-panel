@@ -48,3 +48,21 @@ void ui_remove_all_objs_from_encoder_group(void)
 {
     lv_group_remove_all_objs(group);
 }
+
+uint32_t ui_get_num_offset(uint32_t num, int32_t max, int32_t offset)
+{
+    if (num >= max) {
+        printf("[ERROR] num should less than max\n");
+        return num;
+    }
+
+    uint32_t i;
+    if (offset >= 0) {
+        i = (num + offset) % max;
+    } else {
+        offset = max + (offset % max);
+        i = (num + offset) % max;
+    }
+
+    return i;
+}

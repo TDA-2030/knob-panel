@@ -143,21 +143,21 @@ static void mask_event_cb(lv_event_t *e)
     }
 }
 
-void ui_washing_init(ret_cb_t ret_cb)
+void ui_washing_init(const ui_app_param_t *param)
 {
     if (page) {
         LV_LOG_WARN("washing page already created");
         return;
     }
 
-    return_callback = ret_cb;
+    return_callback = param->ret_cb;
 
     page = lv_obj_create(lv_scr_act());
     lv_obj_set_size(page, lv_obj_get_width(lv_obj_get_parent(page)), lv_obj_get_height(lv_obj_get_parent(page)));
     lv_obj_set_style_border_width(page, 5, 0);
     lv_obj_set_style_radius(page, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_bg_color(page, lv_color_make(20, 20, 20), 0);
-    lv_obj_set_style_border_color(page, lv_palette_main(LV_PALETTE_LIGHT_BLUE), 0);
+    lv_obj_set_style_border_color(page, param->theme_color, 0);
     lv_obj_clear_flag(page, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(page);
     lv_obj_refr_size(page);

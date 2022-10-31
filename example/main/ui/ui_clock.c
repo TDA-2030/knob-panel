@@ -51,14 +51,14 @@ static void clock_event_cb(lv_event_t *e)
     }
 }
 
-void ui_clock_init(ret_cb_t ret_cb)
+void ui_clock_init(const ui_app_param_t *param)
 {
     if (page) {
         LV_LOG_WARN("clock page already created");
         return;
     }
 
-    return_callback = ret_cb;
+    return_callback = param->ret_cb;
 
     page = lv_obj_create(lv_scr_act());
     lv_obj_set_size(page, lv_obj_get_width(lv_obj_get_parent(page)), lv_obj_get_height(lv_obj_get_parent(page)));

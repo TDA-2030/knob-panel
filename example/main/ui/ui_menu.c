@@ -11,13 +11,15 @@
 #include "ui_light.h"
 #include "ui_player.h"
 #include "ui_weather.h"
-#include "ui_fan.h"
+#include "ui_thermostat.h"
 #include "ui_washing.h"
+
+#if !USE_NEW_MENU
 
 typedef struct {
     const char *name;
     const lv_img_dsc_t *icon;
-    void (*create)(ret_cb_t ret_cb);
+    void (*create)(const ui_app_param_t *param);
 } ui_menu_app_t;
 
 LV_IMG_DECLARE(icon_clock);
@@ -30,7 +32,7 @@ LV_IMG_DECLARE(icon_washing);
 static ui_menu_app_t menu[] = {
     {"clock", &icon_clock, ui_clock_init},
     {"washing", &icon_washing, ui_washing_init},
-    {"fans", &icon_fans, ui_fan_init},
+    {"thermostat", &icon_fans, ui_thermostat_init},
     {"light", &icon_light, ui_light_init},
     {"player", &icon_player, ui_player_init},
     {"weather", &icon_weather, ui_weather_init},
@@ -51,27 +53,9 @@ static uint8_t invisable_index;
 
 static void menu_anim_ready_cb(lv_anim_t *a);
 
-static uint32_t get_num_offset(uint32_t num, int32_t max, int32_t offset)
-{
-    if (num >= max) {
-        printf("[ERROR] num should less than max\n");
-        return num;
-    }
-
-    uint32_t i;
-    if (offset >= 0) {
-        i = (num + offset) % max;
-    } else {
-        offset = max + (offset % max);
-        i = (num + offset) % max;
-    }
-
-    return i;
-}
-
 static uint32_t get_app_index(int8_t offset)
 {
-    return get_num_offset(app_index, APP_NUM, offset);
+    return ui_get_num_offset(app_index, APP_NUM, offset);
 }
 
 static void app_return_cb(void *args)
@@ -136,7 +120,11 @@ static void menu_event_cb(lv_event_t *e)
     } else if (LV_EVENT_CLICKED == code) {
         lv_group_set_editing(lv_group_get_default(), false);
         ui_remove_all_objs_from_encoder_group();
-        menu[get_app_index(0)].create(app_return_cb);
+        ui_app_param_t param = {
+            .ret_cb = app_return_cb,
+            .theme_color = lv_color_make(255, 255, 255),
+        }
+        menu[get_app_index(0)].create(&param);
     }
 }
 
@@ -145,9 +133,9 @@ static void menu_anim_ready_cb(lv_anim_t *a)
     int8_t extra_icon_index = (int8_t)lv_anim_get_user_data(a);
     int8_t dir = extra_icon_index > 0 ? 1 : -1;
     app_index = get_app_index(dir);
-    invisable_index = get_num_offset(invisable_index, ICONS_SHOW_NUM + 1, dir);
+    invisable_index = ui_get_num_offset(invisable_index, ICONS_SHOW_NUM + 1, dir);
     for (size_t i = 0; i < ICONS_SHOW_NUM; i++) {
-        visible_index[i] = get_num_offset(visible_index[i], ICONS_SHOW_NUM + 1, dir);
+        visible_index[i] = ui_get_num_offset(visible_index[i], ICONS_SHOW_NUM + 1, dir);
     }
     anim_flag = false;
     printf("dir=%d, app_index=%d, invisable_index=%d\n", dir, app_index, invisable_index);
@@ -199,4 +187,4 @@ void ui_menu_init(void)
 }
 
 
-
+#endif

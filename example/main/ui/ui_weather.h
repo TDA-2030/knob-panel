@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-void ui_weather_init(ret_cb_t ret_cb);
+void ui_weather_init(const ui_app_param_t *param);
 void ui_weather_delete(void);
 
 #ifdef __cplusplus
